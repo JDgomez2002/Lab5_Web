@@ -1,9 +1,70 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>JS Only</title>
-    </head>
-    <body>
+  <head>
+    <title>JS Only</title>
+  </head>
+  <body>
+    <script type="application/javascript">
+      const form1 = document.createElement('form')
+      const form2 = document.createElement('form')
+      const input1 = document.createElement('input')
+      const input2 = document.createElement('input')
+      const button1 = document.createElement('button')
+      button1.append('Send Message!')
+      form1.append(input1)
+      form1.append(button1)
+      form2.append(input2)
 
-    </body>
+      const ul = document.createElement('ul')
+      form2.style.backgroundColor = '#a2d2ff'
+
+      const Message = (mssg_txt, userName) => {
+        const li = document.createElement('li')
+        const userSpan = document.createElement('span')
+        userSpan.append(`${userName}: `)
+        userSpan.style.fontWeight = 'bold'
+        li.append(userSpan)
+        li.append(mssg_txt)
+        return li
+      }
+
+      const getMessages = async () => {
+        const response = await fetch('http://uvgenios.online/api/messages')
+        const messages = await response.json()
+        const lis = messages.map((message) => Message(message.text, message.user))
+
+        lis.forEach((li) => ul.append(li))
+      }
+
+      const postMessage = async (text) => {
+        const body = {
+            text,
+            user: 'JDgomez'
+        }
+
+        const response = await fetch('http://uvgenios.online/api/messages', {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        return response
+      }
+
+      getMessages()
+
+      button1.addEventListener('click', async (event) => {
+        event.preventDefault()
+        await postMessage(input1.value)
+        ul.innerHTML = ""
+        getMessages()
+      })
+
+      document.body.append(ul)
+      document.body.append(form2)
+      document.body.append(form1)
+      
+    </script>
+  </body>
 </html>
