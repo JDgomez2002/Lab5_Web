@@ -5,26 +5,100 @@
   </head>
   <body>
     <script type="application/javascript">
+
+      function validateURL(text){
+        const mssg_txt = new RegExp("^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$")
+        return mssg_txt.test(text)
+      }
+
+      function validateImage(text){
+        return /\.(jpeg|jpg|gif|png)$/.test(text)
+      }
+
+      let error_mssg = ''
+
       const form1 = document.createElement('form')
       const form2 = document.createElement('form')
       const input1 = document.createElement('input')
       const input2 = document.createElement('input')
       const button1 = document.createElement('button')
+      const div_separator = document.createElement('div')
+      const div_separator2 = document.createElement('div')
+      const error_message = document.createElement('div')
+      
       button1.append('Send Message!')
-      form1.append(input1)
-      form1.append(button1)
-      form2.append(input2)
+      input1.placeholder = 'Message'
+      input2.placeholder = 'Username'
+      error_message.append(error_mssg)
 
+      form1.append(div_separator2)
+      form1.append(input1)
+      form1.append(div_separator)
+      form1.append(button1)
+      form1.append(error_message)
+      form2.append(input2)
+    
       const ul = document.createElement('ul')
-      form2.style.backgroundColor = '#a2d2ff'
+
+      ul.style.height = '800px'
+      ul.style.overflowY = 'auto'
+      ul.style.overflowX = 'hidden'
+
+      //Colors for view forms and elements
+      // form1.style.backgroundColor = 'blue'
+      // form2.style.backgroundColor = '#a2d2ff'
+      // div_separator.style.backgroundColor = 'green'
+      // ul.style.backgroundColor = 'red'
+      // error_message.style.backgroundColor = 'orange'
+
+      error_message.style.color = '#bf0603'
+
+      error_message.style.fontWeight = 'bold'
+
+      form1.style.marginLeft = '10px'
+      form2.style.marginLeft = '10px'
+      div_separator.style.height = '5px'
+      div_separator2.style.height = '1.5px'
+      error_message.style.marginLeft = '8px'
+
+      error_message.style.display = 'inline-block'
+
+      
+      // ul.style.height = '40px'
 
       const Message = (mssg_txt, userName) => {
         const li = document.createElement('li')
         const userSpan = document.createElement('span')
         userSpan.append(`${userName}: `)
         userSpan.style.fontWeight = 'bold'
+
+        const page = document.createElement('iframe')
+        const img = document.createElement('img')
+        const p = document.createElement('p')
+        // meta.style.setProperty = 'og:image'
+        // page.src = mssg_txt
+        // img.src = mssg_txt
+        page.blur()
+
         li.append(userSpan)
         li.append(mssg_txt)
+
+        if(validateURL(mssg_txt)){
+          console.log('validated')
+          li.append(p)
+          if(validateImage(mssg_txt)){
+            img.style.width = '90px'
+            img.style.height = '90px'
+            img.src = mssg_txt
+            li.append(img)
+          }
+          else{
+            page.style.width = '1000px'
+            page.style.height = '500px'
+            page.src = mssg_txt
+            li.append(page)
+          }
+        }
         return li
       }
 
@@ -34,12 +108,19 @@
         const lis = messages.map((message) => Message(message.text, message.user))
 
         lis.forEach((li) => ul.append(li))
+        setTimeout(function(){console.log("Waiting...")}, 1000)
+        input1.focus()
+        input1.select()
+        
+        ul.scrollTop = ul.scrollHeight;
+        ul.blur()
+
       }
 
-      const postMessage = async (text) => {
+      const postMessage = async (text, userName) => {
         const body = {
             text,
-            user: 'JDgomez'
+            user: userName
         }
 
         const response = await fetch('http://uvgenios.online/api/messages', {
@@ -52,19 +133,54 @@
         return response
       }
 
-      getMessages()
-
       button1.addEventListener('click', async (event) => {
         event.preventDefault()
-        await postMessage(input1.value)
-        ul.innerHTML = ""
-        getMessages()
-      })
+        let user = ''
+        if(input2.value==''){
+          user = 'Unknow'
+        }
+        else{
+          user = input2.value
+        }
+        if(input1.value.length == 0 ){
+          error_mssg = 'Error: Type a messsage to send.'
+          error_message.style.color = '#bf0603'
+          error_message.innerHTML = error_mssg
+        }
+        else if(input1.value.length <= 140 ){
+          await postMessage(input1.value, user)
+          ul.innerHTML = ""
+          error_message.innerHTML = ''
+          // error_message.value('')
+          getMessages()
+          input1.value = ''
+          error_mssg = 'Message sent!'
+          error_message.style.color = '#38b000'
+          error_message.innerHTML = error_mssg
+        }
+        else{
+          error_mssg = 'Error: Message too large! Just up to 140 characters per message.'
+          error_message.style.color = '#bf0603'
+          error_message.innerHTML = error_mssg
+        }
+      })  
 
+      getMessages()
+      
       document.body.append(ul)
       document.body.append(form2)
       document.body.append(form1)
+
+      setInterval(ul.blur(), 1000)
+      setInterval(input1.focus(), 1000)
       
+
+      // => (50 puntos) [Criterio subjetivo] Según qué tan interesante es el diseño de su interfaz. 
+      // => (10 puntos) Por colocar el campo de texto para escribir el mensaje en la parte inferior de la pantalla (no debe ocultarse cuando hay muchos mensajes). 
+      // => (10 puntos) Por limitar la cantidad de caracteres permitidos a 140 en cada mensaje. 
+      // => (10 puntos) Por agregar hacer "submit" del mensaje utilizando "Enter". 
+      // => 
+
     </script>
   </body>
 </html>
